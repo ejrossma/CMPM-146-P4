@@ -39,3 +39,23 @@ def spread_to_weakest_neutral_planet(state):
     else:
         # (4) Send half the ships from my strongest planet to the weakest enemy planet.
         return issue_order(state, strongest_planet.ID, weakest_planet.ID, strongest_planet.num_ships / 2)
+
+
+#def spread_until_advantaged(state):
+    #player_growth_rate = 0
+    #for planet in my_planets():
+        #player_growth_rate += planet.growth_rate
+
+    #enemy_possible_growth_rate = 0    
+    #for planet in enemy_planets():
+        #enemy_possible_growth_rate += planet.growth_rate
+    #for planet in neutral_planets():
+        #enemy_possible_growth_rate += planet.growth_rate
+
+    #If enemy_possible_growth_rate < player_growth_rate:
+        #return False
+        
+    #find closest planets
+        #if possible fleet is greater than planet number
+            #send fleet size equal to planet size + 1
+        #send up to 4 at a time

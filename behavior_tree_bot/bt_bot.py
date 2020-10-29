@@ -22,6 +22,9 @@ from planet_wars import PlanetWars, finish_turn
 # of winning against all the 5 opponent bots
 def setup_behavior_tree():
 
+          #Selector    
+    #win   #defend    #spread 
+
     #Spreading Strategy:
         #ran at the beginning of the game
         #stop when our growth rate is greater than the enemies potential growth rate
@@ -31,7 +34,6 @@ def setup_behavior_tree():
             #enemy_growth_rate = 0    
             #for planet in my_planets()
                 #enemy_growth_rate += planet.growth_rate
-
 
         #find closest planets
         #if possible fleet is greater than planet number
@@ -46,9 +48,7 @@ def setup_behavior_tree():
             #(less than or equal to enemy_fleet.turns_remaining)
 
         #if we can't defend at a close distance increase the scope and try to defend with more planets
-
-
-        #if we lose a planet trample it with all of our not defending resources
+            #this means we will be losing the planet so need to incorporate growth to calculation
 
     #Punish the Opponent Strategy:
 
