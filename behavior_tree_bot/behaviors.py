@@ -59,3 +59,19 @@ def spread_to_weakest_neutral_planet(state):
         #if possible fleet is greater than planet number
             #send fleet size equal to planet size + 1
         #send up to 4 at a time
+
+
+#def defend(state):
+    #if enemy fleet attacking:
+        #defense_power = 0
+        #increase_scope = 0
+        #defending_planets = []
+        #while defense_power < enemy_fleet_power:
+            #defending_planets = [planet for distance(planet, attack's_destination_planet) <= turns_until_attack_completes + increase_scope]
+            #for planet in defending_planets:
+                #defense_power += planet.value
+            #increase_scope += 1
+        
+        #required_contribution = enemy_fleet_power/len(defending_planets)
+        #for planet in defending_planets:
+            #issue_order(state, planet, attack's_destination_planet, required_contribution)
