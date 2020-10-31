@@ -41,7 +41,6 @@ def spread_to_weakest_neutral_planet(state):
         # (4) Send half the ships from my strongest planet to the weakest enemy planet.
         return issue_order(state, strongest_planet.ID, weakest_planet.ID, strongest_planet.num_ships / 2)
 
-
 def spread_until_advantaged(state):
     # (1) return false if the player's total growth per turn is greater than the opponents possible growth per turn
     # (2) iterate through all of the planets and do a strength calculation (that judges ships lost vs distance traveled) to find most efficient planet to travel to
@@ -93,3 +92,18 @@ def spread_until_advantaged(state):
                 best_options.remove(route)
     return False
     '''
+
+#def defend(state):
+    #if enemy fleet attacking:
+        #defense_power = 0
+        #increase_scope = 0
+        #defending_planets = []
+        #while defense_power < enemy_fleet_power:
+            #defending_planets = [planet for distance(planet, attack's_destination_planet) <= turns_until_attack_completes + increase_scope]
+            #for planet in defending_planets:
+                #defense_power += planet.value
+            #increase_scope += 1
+        
+        #required_contribution = enemy_fleet_power/len(defending_planets)
+        #for planet in defending_planets:
+            #issue_order(state, planet, attack's_destination_planet, required_contribution)
