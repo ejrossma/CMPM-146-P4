@@ -64,7 +64,7 @@ def spread_until_advantaged(state):
     
     #go through all neutral planets
     #for each planet in my planets
-    #check the distance from planet to neutral
+    #check the cost from planet to neutral
     #find smallest value and check if less than best option
     #issue order on the best option
 
@@ -78,20 +78,21 @@ def spread_until_advantaged(state):
         if possible_route:
             best = heappop(possible_route)
             heappush(best_options, best)
+    '''
     if best_options:
         order = heappop(best_options)
         return issue_order(state, order[1].ID, order[2].ID, order[2].num_ships + 1)
     else:
         return False
     '''
+
     while best_options:
         order = heappop(best_options)
         issue_order(state, order[1].ID, order[2].ID, order[2].num_ships + 1)
-        for route in best_options
+        for route in best_options:
             if route[1].num_ships < route[2].num_ships:
                 best_options.remove(route)
     return False
-    '''
 
 #def defend(state):
     #if enemy fleet attacking:
