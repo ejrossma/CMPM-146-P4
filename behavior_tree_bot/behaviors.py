@@ -23,24 +23,6 @@ def attack_weakest_enemy_planet(state):
         return issue_order(state, strongest_planet.ID, weakest_planet.ID, strongest_planet.num_ships / 2)
 
 
-def spread_to_weakest_neutral_planet(state):
-    # (1) If we currently have a fleet in flight, just do nothing.
-    if len(state.my_fleets()) >= 1:
-        return False
-
-    # (2) Find my strongest planet.
-    strongest_planet = max(state.my_planets(), key=lambda p: p.num_ships, default=None)
-
-    # (3) Find the weakest neutral planet.
-    weakest_planet = min(state.neutral_planets(), key=lambda p: p.num_ships, default=None)
-
-    if not strongest_planet or not weakest_planet:
-        # No legal source or destination
-        return False
-    else:
-        # (4) Send half the ships from my strongest planet to the weakest enemy planet.
-        return issue_order(state, strongest_planet.ID, weakest_planet.ID, strongest_planet.num_ships / 2)
-
 def spread_until_advantaged(state):
     # (1) return false if the player's total growth per turn is greater than the opponents possible growth per turn
     # (2) iterate through all of the planets and do a strength calculation (that judges ships lost vs distance traveled) to find most efficient planet to travel to
@@ -75,16 +57,21 @@ def spread_until_advantaged(state):
             if my_planet.num_ships > planet.num_ships and not any(fleet.destination_planet == planet.ID for fleet in state.my_fleets()):
                 calculated_cost = state.distance(planet.ID, my_planet.ID) + planet.num_ships + (planet.num_ships / planet.growth_rate)
                 heappush(possible_route, (calculated_cost, my_planet, planet))
+
         if possible_route:
             best = heappop(possible_route)
-            heappush(best_options, best)
-    '''
-    if best_options:
-        order = heappop(best_options)
-        return issue_order(state, order[1].ID, order[2].ID, order[2].num_ships + 1)
-    else:
-        return False
-    '''
+            closest_enemy = 100
+            for planet in state.enemy_planets():
+                temp = state.distance(planet.ID, best[2].ID)
+                if (temp < closest_enemy):
+                    closest_enemy = temp
+            closest_planet = 100
+            for planet in state.my_planets():
+                temp = state.distance(planet.ID, best[2].ID)
+                if (temp < closest_enemy):
+                    closest_planet = temp
+            if closest_enemy >= closest_planet:
+                heappush(best_options, best)
 
     while best_options:
         order = heappop(best_options)
@@ -94,17 +81,24 @@ def spread_until_advantaged(state):
                 best_options.remove(route)
     return False
 
-#def defend(state):
-    #if enemy fleet attacking:
-        #defense_power = 0
-        #increase_scope = 0
-        #defending_planets = []
-        #while defense_power < enemy_fleet_power:
-            #defending_planets = [planet for distance(planet, attack's_destination_planet) <= turns_until_attack_completes + increase_scope]
-            #for planet in defending_planets:
-                #defense_power += planet.value
-            #increase_scope += 1
+def defensive_plan(state):
+    closestFleet = state.enemy_fleets[0]
+    closestAttack = state.enemy_fleets[0].turns_remaining
+    for fleet in state.enemy_fleets:
+        if fleet.turns_remaining < closestAttack:
+            closestAttack = fleet.turns_remaining
+            closestFleet = fleet
+            
+    defensePower = 0
+    increaseScope = 0
+    defendingPlanets = []
+    while defensePower < closestFleet.num_ships:
+        defendingPlanets = [planet for planet in state.my_planets() if state.distance(planet, closestFleet.destination_planet) <= closestFleet.turns_remaining + increaseScope]:
+        for planet in defendingPlanets:
+            defensePower += planet.num_ships
+        increaseScope += 1
         
-        #required_contribution = enemy_fleet_power/len(defending_planets)
-        #for planet in defending_planets:
-            #issue_order(state, planet, attack's_destination_planet, required_contribution)
+    requiredContribution = ceil(closestFleet.num_ships/len(defendingPlanets))
+    for planet in defendingPlanets:
+        issue_order(state, planet, closestFleet.destination_planet, requiredContribution)
+    return False

@@ -1,4 +1,8 @@
-
+def if_enemy_fleet(state):
+    for fleet in state.enemy_fleets():
+        if fleet.destination_planet in state.my_planets():
+            return True
+    return False
 
 def if_neutral_planet_available(state):
     return any(state.neutral_planets())
