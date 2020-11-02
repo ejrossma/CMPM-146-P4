@@ -155,7 +155,13 @@ def intercept_plan(state):
 
 def free_planet_plan(state):
     for myplanet in state.my_planets():
-        for planet in state.not_my_planets():
+        for planet in state.enemy_planets():
+            skip = 0
             distanceBetween = state.distance(myplanet.ID, planet.ID)
-            if myplanet.num_ships/2 >= planet.num_ships + distanceBetween * planet.growth_rate:
-                issue_order(state, myplanet.ID, planet.ID, planet.num_ships + distanceBetween * planet.growth_rate)
+            if myplanet.num_ships * 0.75 >= planet.num_ships + distanceBetween * planet.growth_rate:
+                for fleet in state.my_fleets():
+                    if fleet.source_planet == myplanet.ID and fleet.destination_planet == planet.ID:
+                        skip = 1
+                if skip == 0:
+                    return issue_order(state, myplanet.ID, planet.ID, 1 + planet.num_ships + distanceBetween * planet.growth_rate)
+    return False
