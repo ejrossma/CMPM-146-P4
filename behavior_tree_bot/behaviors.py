@@ -2,8 +2,9 @@ import sys
 sys.path.insert(0, '../')
 from planet_wars import issue_order
 from heapq import heappop, heappush
+from math import ceil
 
-
+'''
 def attack_weakest_enemy_planet(state):
     # (1) If we currently have a fleet in flight, abort plan.
     if len(state.my_fleets()) >= 1:
@@ -21,7 +22,7 @@ def attack_weakest_enemy_planet(state):
     else:
         # (4) Send half the ships from my strongest planet to the weakest enemy planet.
         return issue_order(state, strongest_planet.ID, weakest_planet.ID, strongest_planet.num_ships / 2)
-
+'''
 
 def spread_until_advantaged(state):
     # (1) return false if the player's total growth per turn is greater than the opponents possible growth per turn
@@ -70,7 +71,7 @@ def spread_until_advantaged(state):
                 temp = state.distance(planet.ID, best[2].ID)
                 if (temp < closest_enemy):
                     closest_planet = temp
-            if closest_enemy >= closest_planet:
+            if closest_enemy >= closest_planet and not any(fleet.destination_planet == best[1].ID for fleet in state.enemy_fleets()):
                 heappush(best_options, best)
 
     while best_options:
@@ -81,24 +82,79 @@ def spread_until_advantaged(state):
                 best_options.remove(route)
     return False
 
-def defensive_plan(state):
-    closestFleet = state.enemy_fleets[0]
-    closestAttack = state.enemy_fleets[0].turns_remaining
-    for fleet in state.enemy_fleets:
-        if fleet.turns_remaining < closestAttack:
-            closestAttack = fleet.turns_remaining
-            closestFleet = fleet
+def howManyShips(planet):
+    return planet.num_ships
+
+def intercept_plan(state):
+    if not state.enemy_fleets():
+        return False
+    closestAttack = 100
+    enemy_fleets = state.enemy_fleets()
+    closestFleet = enemy_fleets[0]
+
+    for fleet in state.enemy_fleets():
+        for planet in state.my_planets():
+            if fleet.destination_planet == planet.ID:
+                if fleet.turns_remaining < closestAttack:
+                    closestAttack = fleet.turns_remaining
+                    closestFleet = fleet
+
+    #if not closestFleet.destination_planet == planet.ID:
+        #return False
             
     defensePower = 0
     increaseScope = 0
     defendingPlanets = []
+    ships = 0
+    for planets in state.my_planets():
+        ships += planets.num_ships
+    if ships < closestFleet.num_ships:
+        return False
+
+    start_defense = 0
+    dest_growth_rate = 0
+    for planet in state.my_planets():
+        if planet.ID == closestFleet.destination_planet:
+            dest_growth_rate = planet.growth_rate
+            start_defense = planet.num_ships + closestFleet.turns_remaining * planet.growth_rate
+            defensePower = start_defense
+
     while defensePower < closestFleet.num_ships:
-        defendingPlanets = [planet for planet in state.my_planets() if state.distance(planet, closestFleet.destination_planet) <= closestFleet.turns_remaining + increaseScope]:
+        defendingPlanets = [planet for planet in state.my_planets() if state.distance(planet.ID, closestFleet.destination_planet) <= closestFleet.turns_remaining + increaseScope]
         for planet in defendingPlanets:
             defensePower += planet.num_ships
         increaseScope += 1
         
-    requiredContribution = ceil(closestFleet.num_ships/len(defendingPlanets))
+    if not defendingPlanets:
+        return False
+    requiredContribution = ceil((closestFleet.num_ships + (increaseScope * dest_growth_rate) - start_defense)  / len(defendingPlanets)) + 1
+
+    defendingPlanets.sort(key=howManyShips)
+
+    final_check = []
+    compensation = 0
     for planet in defendingPlanets:
-        issue_order(state, planet, closestFleet.destination_planet, requiredContribution)
+        if planet.num_ships < requiredContribution:
+            temp = requiredContribution - planet.num_ships - 1
+            compensation += temp
+            final_check.append((planet.num_ships - 1, planet))
+        elif planet.num_ships > requiredContribution + compensation:
+            final_check.append((requiredContribution + compensation, planet))
+            compensation = 0
+        else:
+            temp = compensation - (requiredContribution + compensation - (planet.num_ships - 1))
+            compensation -= temp
+            final_check.append((requiredContribution + temp, planet))
+
+
+    for planet in final_check:
+        skip = 0
+        for fleet in state.my_fleets():
+            if fleet.source_planet == planet[1].ID and fleet.destination_planet == closestFleet.destination_planet:
+                skip = 1
+        if skip == 0:
+            issue_order(state, planet[1].ID, closestFleet.destination_planet, planet[0])
     return False
+
+def free_planet_plan(state):
+    pass

@@ -1,7 +1,8 @@
 def if_enemy_fleet(state):
     for fleet in state.enemy_fleets():
-        if fleet.destination_planet in state.my_planets():
-            return True
+        for planet in state.my_planets():
+            if fleet.destination_planet == planet.ID:
+            	return True
     return False
 
 def if_neutral_planet_available(state):
@@ -13,3 +14,6 @@ def have_largest_fleet(state):
              + sum(fleet.num_ships for fleet in state.my_fleets()) \
            > sum(planet.num_ships for planet in state.enemy_planets()) \
              + sum(fleet.num_ships for fleet in state.enemy_fleets())
+
+def if_free_planet(state):
+	pass

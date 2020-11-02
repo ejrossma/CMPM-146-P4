@@ -22,39 +22,6 @@ from planet_wars import PlanetWars, finish_turn
 # of winning against all the 5 opponent bots
 def setup_behavior_tree():
 
-          #Selector    
-    #win   #defend    #spread 
-
-    #Spreading Strategy:
-        #ran at the beginning of the game
-        #stop when our growth rate is greater than the enemies potential growth rate
-            #player_growth_rate = 0
-            #for planet in my_planets()
-                #player_growth_rate += planet.growth_rate
-            #enemy_growth_rate = 0    
-            #for planet in my_planets()
-                #enemy_growth_rate += planet.growth_rate
-
-        #find closest planets
-        #if possible fleet is greater than planet number
-            #send fleet size equal to planet size + 1
-        #send up to 4 at a time
-
-    #Sniper Strategy:
-
-        #if enemy is sending a fleet to a neutral planet
-            #for all my_planets if state.distance(my_planet, neutral planet) + 10 <= 
-
-    #Defending Strategy:
-        
-        #where enemy is sending fleets
-        #how big the fleet is (and how much longer until it reaches planet)
-        #calculate if we can defend by sending from planets that are a short enough distance away to reach in time 
-            #(less than or equal to enemy_fleet.turns_remaining)
-
-        #if we can't defend at a close distance increase the scope and try to defend with more planets
-            #this means we will be losing the planet so need to incorporate growth to calculation
-
     #Punish the Opponent Strategy:
 
         #if our effective attack power (distance, fleet power in distance, planet growth) 
@@ -68,17 +35,22 @@ def setup_behavior_tree():
     # Top-down construction of behavior tree
     root = Selector(name='High Level Ordering of Strategies')
 
-    defensivePlan = Sequence(name='Defensive Strategy')
+    acquire_freebies = Sequence(name= 'Free Planets Strategy')
+    free_planet_check = Check(if_free_planet)
+    attack = Action(free_planet_plan)
+    acquire_freebies.child_nodes = [free_planet_check, attack]
+
+    defensive_plan = Sequence(name='Defensive Strategy')
     enemy_fleet_check = Check(if_enemy_fleet)
-    defend = Action(defensive_plan)
-    defensivePlan.child_nodes = [enemy_fleet_check, defend]
+    defend = Action(intercept_plan)
+    defensive_plan.child_nodes = [enemy_fleet_check, defend]
 
     spread_sequence = Sequence(name='Spread Strategy')
     neutral_planet_check = Check(if_neutral_planet_available)
     spread_action = Action(spread_until_advantaged)
     spread_sequence.child_nodes = [neutral_planet_check, spread_action]
 
-    root.child_nodes = [defensive_plan, spread_sequence, attack.copy()]
+    root.child_nodes = [acquire_freebies, defensive_plan, spread_sequence]
 
     logging.info('\n' + root.tree_to_string())
     return root
