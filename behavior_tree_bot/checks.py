@@ -16,4 +16,8 @@ def have_largest_fleet(state):
              + sum(fleet.num_ships for fleet in state.enemy_fleets())
 
 def if_free_planet(state):
-	pass
+    myPlanets = state.my_planets()
+    enemyPlanets = state.enemy_planets()
+    if myPlanets >= enemyPlanets:
+	    return True
+    return False

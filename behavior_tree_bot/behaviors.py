@@ -9,13 +9,10 @@ def attack_weakest_enemy_planet(state):
     # (1) If we currently have a fleet in flight, abort plan.
     if len(state.my_fleets()) >= 1:
         return False
-
     # (2) Find my strongest planet.
     strongest_planet = max(state.my_planets(), key=lambda t: t.num_ships, default=None)
-
     # (3) Find the weakest enemy planet.
     weakest_planet = min(state.enemy_planets(), key=lambda t: t.num_ships, default=None)
-
     if not strongest_planet or not weakest_planet:
         # No legal source or destination
         return False
@@ -56,7 +53,7 @@ def spread_until_advantaged(state):
         possible_route = []
         for my_planet in state.my_planets():
             if my_planet.num_ships > planet.num_ships and not any(fleet.destination_planet == planet.ID for fleet in state.my_fleets()):
-                calculated_cost = state.distance(planet.ID, my_planet.ID) + planet.num_ships + (planet.num_ships / planet.growth_rate)
+                calculated_cost = planet.growth_rate * -1
                 heappush(possible_route, (calculated_cost, my_planet, planet))
 
         if possible_route:
@@ -157,4 +154,8 @@ def intercept_plan(state):
     return False
 
 def free_planet_plan(state):
-    pass
+    for myplanet in state.my_planets():
+        for planet in state.not_my_planets():
+            distanceBetween = state.distance(myplanet.ID, planet.ID)
+            if myplanet.num_ships/2 >= planet.num_ships + distanceBetween * planet.growth_rate:
+                issue_order(state, myplanet.ID, planet.ID, planet.num_ships + distanceBetween * planet.growth_rate)
